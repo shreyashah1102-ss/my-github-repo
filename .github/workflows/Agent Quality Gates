@@ -1,0 +1,25 @@
+name: CI-CD with Agent Quality Gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: npm ci && npm test
+      - name: CodeQL scan
+        uses: github/codeql-action/analyze@v3
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+    environment: production   # <-- this triggers the required-reviewer gate
+    steps:
+      - name: Deploy
+        run: ./deploy.sh
